@@ -14,17 +14,30 @@ type NavLink = {
 export default function Nav({
   links,
   right,
+  variant = "light",
 }: {
   links: NavLink[];
   right?: React.ReactNode;
+  variant?: "dark" | "light";
 }) {
   const [open, setOpen] = useState(false);
+  const isDark = variant === "dark";
+
+  const linkBase = isDark ? "nav-link-dark" : "nav-link-light";
+  const linkActive = isDark ? "nav-link-dark-active" : "nav-link-light-active";
+  const logoClass = isDark
+    ? "text-white hover:opacity-70"
+    : "text-brand-black hover:opacity-70";
+  const menuIconClass = isDark ? "text-white" : "text-brand-black";
+  const mobileMenuBg = isDark
+    ? "border-white/10 bg-brand-black"
+    : "border-brand-black/10 bg-brand-cream";
 
   return (
     <nav className="site-container flex items-center justify-between py-6 md:py-8">
       <Link
         href="/"
-        className="font-sans text-sm tracking-wide text-neutral-900 transition hover:opacity-60 dark:text-neutral-100"
+        className={`font-sans text-sm font-medium tracking-wide transition ${logoClass}`}
       >
         taskflow
       </Link>
@@ -35,7 +48,7 @@ export default function Nav({
             <Link
               key={link.label}
               href={link.href}
-              className={`nav-link ${link.active ? "nav-link-active" : ""}`}
+              className={`nav-link ${linkBase} ${link.active ? linkActive : ""}`}
             >
               {link.label}
             </Link>
@@ -44,7 +57,7 @@ export default function Nav({
               key={link.label}
               type="button"
               onClick={link.onClick}
-              className={`nav-link ${link.active ? "nav-link-active" : ""}`}
+              className={`nav-link ${linkBase} ${link.active ? linkActive : ""}`}
             >
               {link.label}
             </button>
@@ -58,7 +71,7 @@ export default function Nav({
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="text-neutral-900 dark:text-neutral-100"
+          className={menuIconClass}
           aria-label="Toggle menu"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -66,7 +79,9 @@ export default function Nav({
       </div>
 
       {open && (
-        <div className="absolute left-0 right-0 top-[4.5rem] z-50 border-b border-neutral-200 bg-[#f5f5f5] px-6 py-6 dark:border-neutral-800 dark:bg-neutral-950 md:hidden">
+        <div
+          className={`absolute left-0 right-0 top-[4.5rem] z-50 border-b px-6 py-6 md:hidden ${mobileMenuBg}`}
+        >
           <div className="flex flex-col gap-5">
             {links.map((link) =>
               link.href ? (
@@ -74,7 +89,7 @@ export default function Nav({
                   key={link.label}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className={`nav-link text-left ${link.active ? "nav-link-active" : ""}`}
+                  className={`nav-link text-left ${linkBase} ${link.active ? linkActive : ""}`}
                 >
                   {link.label}
                 </Link>
@@ -86,7 +101,7 @@ export default function Nav({
                     link.onClick?.();
                     setOpen(false);
                   }}
-                  className={`nav-link text-left ${link.active ? "nav-link-active" : ""}`}
+                  className={`nav-link text-left ${linkBase} ${link.active ? linkActive : ""}`}
                 >
                   {link.label}
                 </button>

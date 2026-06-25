@@ -13,15 +13,23 @@ const config: Config = {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-serif)', 'Georgia', 'serif'],
       },
-      gridTemplateColumns: {
-        '13': 'repeat(13, minmax(0, 1fr))',
-      },
       colors: {
-        blue: {
-          400: '#2589FE',
-          500: '#0070F3',
-          600: '#2F6FEB',
+        brand: {
+          black: '#000000',
+          cream: '#F5F3EF',
+          accent: '#D94E28',
+          teal: '#1A6B5D',
+          gold: '#E9B44C',
+          navy: '#1E293B',
+          sage: '#A3B18A',
+          burgundy: '#8B1E3F',
+          lavender: '#D1D1F7',
+          sky: '#5B84B1',
+          lime: '#C5D86D',
         },
+      },
+      borderRadius: {
+        '4xl': '2rem',
       },
     },
     keyframes: {

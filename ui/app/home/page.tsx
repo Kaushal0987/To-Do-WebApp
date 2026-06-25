@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { ArrowRight, Plus, X } from "lucide-react";
 import { taskApi, authApi, Task } from "../lib/apiClient";
+import {
+  accentCards,
+  statCards,
+  statusStyles,
+  type TaskFlag,
+} from "../lib/theme";
 import Nav from "../ui/Nav";
 import ThemeToggle from "../ui/ThemeToggle";
 
-type TaskFlag = "Ongoing" | "Due" | "Complete";
 type Filter = "all" | "ongoing" | "due" | "complete";
 
 const FLAG_LABELS: Record<TaskFlag, string> = {
@@ -140,8 +145,8 @@ export default function HomePage() {
 
   if (!loggedIn || loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border border-neutral-400 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-brand-black">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-accent border-t-transparent" />
       </div>
     );
   }
@@ -150,53 +155,77 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <Nav
-        links={filterLinks.map((f) => ({
-          label: f.label,
-          onClick: () => setFilter(f.value),
-          active: filter === f.value,
-        }))}
-        right={
-          <div className="flex items-center gap-6">
-            <ThemeToggle />
-            <button type="button" onClick={logout} className="btn-ghost">
-              logout
-            </button>
-          </div>
-        }
-      />
+      {/* Dark hero */}
+      <section className="bg-brand-black text-white">
+        <Nav
+          variant="dark"
+          links={filterLinks.map((f) => ({
+            label: f.label,
+            onClick: () => setFilter(f.value),
+            active: filter === f.value,
+          }))}
+          right={
+            <div className="flex items-center gap-6">
+              <ThemeToggle variant="dark" />
+              <button
+                type="button"
+                onClick={logout}
+                className="btn-ghost btn-ghost-dark"
+              >
+                logout
+              </button>
+            </div>
+          }
+        />
 
-      <main className="site-container pb-24">
-        {/* Hero */}
-        <section className="pt-4 md:pt-8 lg:pt-12">
-          <h1 className="display-serif italic text-neutral-900 dark:text-neutral-50">
-            {firstName}&apos;s tasks
+        <div className="site-container pb-16 pt-4 md:pb-20 md:pt-8">
+          <h1 className="display-serif text-white">
+            {firstName}&apos;s{" "}
+            <span className="italic text-brand-accent">tasks</span>
           </h1>
-          <p className="mt-8 max-w-2xl font-sans text-base leading-relaxed text-neutral-600 md:text-lg dark:text-neutral-400">
+          <p className="mt-8 max-w-2xl font-sans text-base leading-relaxed text-white/60 md:text-lg">
             You have{" "}
-            <span className="text-neutral-900 dark:text-neutral-100">
-              {stats.ongoing} ongoing
-            </span>
-            ,{" "}
-            <span className="text-neutral-900 dark:text-neutral-100">
-              {stats.due} due
-            </span>
-            , and{" "}
-            <span className="text-neutral-900 dark:text-neutral-100">
-              {stats.complete} complete
-            </span>{" "}
-            — stay focused and move through your list with intention.
+            <span className="text-brand-gold">{stats.ongoing} ongoing</span>,{" "}
+            <span className="text-brand-accent">{stats.due} due</span>, and{" "}
+            <span className="text-brand-teal">{stats.complete} complete</span> —
+            stay focused and move with intention.
           </p>
-        </section>
+        </div>
+      </section>
 
-        {/* Tasks section */}
-        <section className="mt-20 md:mt-28 lg:mt-36">
-          <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <p className="section-label">your tasks</p>
+      {/* Cream content */}
+      <section className="bg-brand-cream">
+        <div className="site-container py-12 md:py-20">
+          {/* Stats row */}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+            {statCards.map((card) => (
+              <div
+                key={card.key}
+                className={`rounded-3xl p-6 md:p-8 ${card.bg} ${card.text}`}
+              >
+                <p className="font-sans text-xs uppercase tracking-[0.15em] opacity-70">
+                  {card.label}
+                </p>
+                <p className="mt-2 font-serif text-4xl italic md:text-5xl">
+                  {stats[card.key as keyof typeof stats]}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Add task */}
+          <div className="mt-16 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="section-label">your tasks</p>
+              <h2 className="mt-2 font-serif text-3xl text-brand-black md:text-4xl">
+                What&apos;s on your{" "}
+                <span className="italic text-brand-accent">list</span>?
+              </h2>
+            </div>
             <button
               type="button"
               onClick={() => setShowAddForm(!showAddForm)}
-              className="btn-ghost flex items-center gap-2 self-start sm:self-auto"
+              className="btn-secondary flex items-center gap-2 self-start"
             >
               <Plus className="h-4 w-4" />
               new task
@@ -204,9 +233,11 @@ export default function HomePage() {
           </div>
 
           {showAddForm && (
-            <div className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="mt-8 flex flex-col gap-4 rounded-3xl bg-white p-6 sm:flex-row sm:items-end md:p-8">
               <div className="flex-1">
-                <label className="section-label mb-2 block">task title</label>
+                <label className="section-label mb-2 block !normal-case">
+                  Task title
+                </label>
                 <input
                   type="text"
                   placeholder="What needs to be done?"
@@ -229,95 +260,120 @@ export default function HomePage() {
           )}
 
           {error && (
-            <p className="mb-8 font-sans text-sm text-red-600 dark:text-red-400">
+            <p className="mt-6 rounded-2xl bg-brand-burgundy/10 px-4 py-3 font-sans text-sm text-brand-burgundy">
               {error}
             </p>
           )}
 
+          {/* Task grid */}
           {filteredTasks.length === 0 ? (
             <div className="py-24 text-center">
-              <p className="font-serif text-3xl italic text-neutral-400 md:text-4xl">
+              <p className="font-serif text-3xl italic text-brand-black/30 md:text-4xl">
                 {filter === "all" ? "Nothing here yet" : `No ${filter} tasks`}
               </p>
-              <p className="mt-4 font-sans text-sm text-neutral-500">
+              <p className="mt-4 font-sans text-sm text-brand-black/40">
                 {filter === "all"
                   ? "Add your first task to get started."
                   : "Try a different filter or create something new."}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-              {filteredTasks.map((task, index) => (
-                <article
-                  key={task.id}
-                  className="group flex min-h-[180px] flex-col justify-between bg-neutral-200/60 p-6 transition duration-300 hover:bg-neutral-200 dark:bg-neutral-900/60 dark:hover:bg-neutral-900 sm:min-h-[220px] md:min-h-[260px] lg:p-8"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="font-sans text-xs text-neutral-400">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => deleteTask(task.id)}
-                      className="text-neutral-400 opacity-0 transition hover:text-neutral-900 group-hover:opacity-100 dark:hover:text-neutral-100"
-                      title="Delete task"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  <h2
-                    className={`mt-6 font-serif text-2xl leading-snug md:text-3xl ${
-                      task.flag === "Complete"
-                        ? "text-neutral-400 line-through"
-                        : "text-neutral-900 dark:text-neutral-100"
-                    }`}
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+              {filteredTasks.map((task, index) => {
+                const style = statusStyles[task.flag as TaskFlag];
+                return (
+                  <article
+                    key={task.id}
+                    className={`group flex min-h-[200px] flex-col justify-between rounded-3xl p-6 transition duration-300 hover:scale-[1.02] md:min-h-[240px] lg:p-8 ${style.bg} ${style.text}`}
                   >
-                    {task.title}
-                  </h2>
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="font-sans text-xs uppercase tracking-[0.15em] opacity-60">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => deleteTask(task.id)}
+                        className="opacity-40 transition hover:opacity-100"
+                        title="Delete task"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
 
-                  <div className="mt-8 flex flex-wrap items-center gap-4">
-                    {(["Ongoing", "Due", "Complete"] as TaskFlag[]).map(
-                      (flag) => (
-                        <button
-                          key={flag}
-                          type="button"
-                          onClick={() => updateFlag(task.id, flag)}
-                          className={`font-sans text-xs lowercase tracking-wide transition ${
-                            task.flag === flag
-                              ? "text-neutral-900 underline decoration-1 underline-offset-4 dark:text-neutral-100"
-                              : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
-                          }`}
-                        >
-                          {FLAG_LABELS[flag]}
-                        </button>
-                      ),
-                    )}
-                  </div>
-                </article>
-              ))}
+                    <h3
+                      className={`mt-6 font-serif text-2xl leading-snug md:text-3xl ${
+                        task.flag === "Complete" ? "line-through opacity-70" : ""
+                      }`}
+                    >
+                      {task.title}
+                    </h3>
+
+                    <div className="mt-8 flex flex-wrap gap-2">
+                      {(["Ongoing", "Due", "Complete"] as TaskFlag[]).map(
+                        (flag) => {
+                          const isActive = task.flag === flag;
+                          return (
+                            <button
+                              key={flag}
+                              type="button"
+                              onClick={() => updateFlag(task.id, flag)}
+                              className={`rounded-full px-3 py-1 font-sans text-xs lowercase tracking-wide transition ${
+                                isActive
+                                  ? "bg-white/25 font-medium"
+                                  : "bg-black/10 opacity-70 hover:opacity-100"
+                              }`}
+                            >
+                              {FLAG_LABELS[flag]}
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        {/* Footer CTA */}
-        {tasks.length > 0 && (
-          <section className="mt-24 flex items-center justify-between border-t border-neutral-300 pt-10 dark:border-neutral-800">
-            <p className="section-label">{stats.total} tasks total</p>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddForm(true);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              className="btn-ghost flex items-center gap-2"
-            >
-              add another
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </section>
-        )}
-      </main>
+      {/* Dark footer strip */}
+      {tasks.length > 0 && (
+        <section className="bg-brand-black py-12 md:py-16">
+          <div className="site-container">
+            <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+              <p className="section-label-light">
+                {stats.total} tasks in your workspace
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddForm(true);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="btn-primary flex items-center gap-2 self-start"
+              >
+                add another
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Accent quote cards */}
+            <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
+              {accentCards.map((card) => (
+                <div
+                  key={card.title}
+                  className={`rounded-2xl p-4 md:p-5 ${card.bg} ${card.text}`}
+                >
+                  <p className="font-serif text-sm italic leading-snug md:text-base">
+                    {card.title}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
